@@ -17,7 +17,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(docker-compose build:*)",
-      "Bash(git push:*)"
+      "Bash(git push:*)",
+      "Bash(dotnet build:*)",
+      "Bash(dotnet restore:*)",
+      "Bash(npm run build:*)",
+      "Bash(npx tsc:*)",
+      "Bash(npx typescript:*)",
+      "Bash(node_modules/.bin/tsc:*)",
+      "Bash(npm install)"
     ],
     "deny": [],
     "ask": []

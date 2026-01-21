@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Net;
 using KoalaWiki.MCP.ModelContextProtocol;
+using KoalaWiki.Options;
 using KoalaWiki.plugins;
 using KoalaWiki.Tools;
 
@@ -24,9 +25,27 @@ public static class KernelFactory
         string model, bool isCodeAnalysis = true,
         List<string>? files = null, Action<IKernelBuilder>? kernelBuilderAction = null)
     {
+        return await GetKernelInternal(chatEndpoint, apiKey, gitPath, model, OpenAIOptions.ModelProvider,
+            isCodeAnalysis, files, kernelBuilderAction);
+    }
+
+    public static async Task<Kernel> GetKernel(OpenAIModelConfig config,
+        string gitPath, bool isCodeAnalysis = true,
+        List<string>? files = null, Action<IKernelBuilder>? kernelBuilderAction = null)
+    {
+        return await GetKernelInternal(config.Endpoint, config.ApiKey, gitPath, config.ModelId, config.Provider,
+            isCodeAnalysis, files, kernelBuilderAction);
+    }
+
+    private static async Task<Kernel> GetKernelInternal(string chatEndpoint,
+        string apiKey,
+        string gitPath,
+        string model, string provider, bool isCodeAnalysis = true,
+        List<string>? files = null, Action<IKernelBuilder>? kernelBuilderAction = null)
+    {
         using var activity = Activity.Current?.Source.StartActivity();
         activity?.SetTag("model", model);
-        activity?.SetTag("provider", OpenAIOptions.ModelProvider);
+        activity?.SetTag("provider", provider);
         activity?.SetTag("code_analysis_enabled", isCodeAnalysis);
         activity?.SetTag("git_path", gitPath);
 
@@ -36,7 +55,9 @@ public static class KernelFactory
 
         kernelBuilder.Services.AddSingleton<IPromptRenderFilter, LanguagePromptFilter>();
 
-        if (OpenAIOptions.ModelProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+        if (string.IsNullOrEmpty(provider)) provider = "OpenAI";
+
+        if (provider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
         {
             kernelBuilder.AddOpenAIChatCompletion(model, new Uri(chatEndpoint), apiKey,
                 httpClient: new HttpClient(new KoalaHttpClientHandler()
@@ -50,8 +71,8 @@ public static class KernelFactory
                     Timeout = TimeSpan.FromSeconds(240),
                 });
         }
-        else if (OpenAIOptions.ModelProvider.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase) ||
-                 OpenAIOptions.ModelProvider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
+        else if (provider.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase) ||
+                 provider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
         {
             kernelBuilder.AddAzureOpenAIChatCompletion(model, chatEndpoint, apiKey, httpClient: new HttpClient(
                 new KoalaHttpClientHandler()
@@ -68,7 +89,7 @@ public static class KernelFactory
         else
         {
             activity?.SetStatus(ActivityStatusCode.Error, "不支持的模型提供者");
-            throw new Exception("暂不支持：" + OpenAIOptions.ModelProvider + "，请使用OpenAI、AzureOpenAI");
+            throw new Exception("暂不支持：" + provider + "，请使用OpenAI、AzureOpenAI");
         }
 
         if (isCodeAnalysis)

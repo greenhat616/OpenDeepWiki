@@ -114,6 +114,15 @@ export interface AISettings {
   frequencyPenalty?: string
   presencePenalty?: string
   customBodyParams?: string
+  chatModelEndpoint?: string
+  chatModelApiKey?: string
+  chatModelProvider?: string
+  analysisModelEndpoint?: string
+  analysisModelApiKey?: string
+  analysisModelProvider?: string
+  deepResearchModelEndpoint?: string
+  deepResearchModelApiKey?: string
+  deepResearchModelProvider?: string
 }
 
 // 存储设置

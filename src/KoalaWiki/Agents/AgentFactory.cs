@@ -1,5 +1,6 @@
 ﻿using System.ClientModel;
 using Azure.AI.OpenAI;
+using KoalaWiki.Options;
 using Microsoft.Agents.AI;
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.Logging;
@@ -13,11 +14,13 @@ public class AgentFactory
         Action<ChatClientAgentOptions> agentAction,
         ILoggerFactory? loggerFactory = null)
     {
-        if (OpenAIOptions.ModelProvider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
+        var config = OpenAIOptions.ResolveModelConfigByModelId(modelId);
+
+        if (config.Provider.Equals("OpenAI", StringComparison.OrdinalIgnoreCase))
         {
-            var openAIClient = new OpenAIClient(new ApiKeyCredential(OpenAIOptions.ChatApiKey), new OpenAIClientOptions
+            var openAIClient = new OpenAIClient(new ApiKeyCredential(config.ApiKey), new OpenAIClientOptions
             {
-                Endpoint = new Uri(OpenAIOptions.Endpoint),
+                Endpoint = new Uri(config.Endpoint),
             });
 
             var chatClient = openAIClient.GetChatClient(modelId);
@@ -36,10 +39,11 @@ public class AgentFactory
 
             return agent;
         }
-        else if (OpenAIOptions.ModelProvider.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase))
+        else if (config.Provider.Equals("AzureOpenAI", StringComparison.OrdinalIgnoreCase) ||
+                 config.Provider.Equals("Azure", StringComparison.OrdinalIgnoreCase))
         {
             var azureOpenAIClient =
-                new AzureOpenAIClient(new Uri(OpenAIOptions.Endpoint), new ApiKeyCredential(OpenAIOptions.ChatApiKey));
+                new AzureOpenAIClient(new Uri(config.Endpoint), new ApiKeyCredential(config.ApiKey));
 
             var chatClient = azureOpenAIClient.GetChatClient(modelId);
 
@@ -56,7 +60,7 @@ public class AgentFactory
         }
         else
         {
-            throw new NotSupportedException($"Model provider '{OpenAIOptions.ModelProvider}' is not supported.");
+            throw new NotSupportedException($"Model provider '{config.Provider}' is not supported.");
         }
     }
 }

@@ -4,7 +4,8 @@ import {
   Zap,
   AlertTriangle,
   Info,
-  HelpCircle
+  HelpCircle,
+  ChevronDown
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { systemSettingsService } from '@/services/admin.service'
@@ -18,6 +19,7 @@ import { Slider } from '@/components/ui/slider'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { useToast } from '@/hooks/useToast'
 import {
@@ -124,6 +126,73 @@ const AISettingsTab: React.FC<AISettingsTabProps> = ({
     { value: 'Custom', label: t('settings.ai.customProvider') }
   ]
 
+  // 渲染独立模型配置面板
+  const renderIndependentConfig = (prefix: string, titleKey: string) => {
+    const providerKey = `${prefix}Provider`
+    const endpointKey = `${prefix}Endpoint`
+    const apiKeyKey = `${prefix}ApiKey`
+
+    return (
+      <Collapsible className="border rounded-md">
+        <CollapsibleTrigger className="flex items-center justify-between w-full p-4 font-medium [&[data-state=open]>svg]:rotate-180 hover:bg-muted/50 transition-colors">
+          {t(titleKey)}
+          <ChevronDown className="h-4 w-4 transition-transform duration-200" />
+        </CollapsibleTrigger>
+        <CollapsibleContent className="p-4 pt-0 grid gap-4 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label>{t('settings.ai.independentProvider')}</Label>
+            <Select
+              value={getSettingValue(providerKey) || ''}
+              onValueChange={(value) => onUpdate(providerKey, value === '' ? '' : value)}
+              disabled={loading}
+            >
+              <SelectTrigger className={validationErrors[providerKey] ? 'border-destructive' : ''}>
+                <SelectValue placeholder={t('settings.ai.useGlobalConfig')} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="">{t('settings.ai.useGlobalConfig')}</SelectItem>
+                {modelProviders.map(provider => (
+                  <SelectItem key={provider.value} value={provider.value}>
+                    {provider.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {validationErrors[providerKey] && (
+              <p className="text-sm text-destructive">{validationErrors[providerKey]}</p>
+            )}
+          </div>
+          <div className="space-y-2">
+            <Label>{t('settings.ai.independentEndpoint')}</Label>
+            <Input
+              value={getSettingValue(endpointKey)}
+              onChange={(e) => onUpdate(endpointKey, e.target.value)}
+              placeholder={t('settings.ai.useGlobalConfig')}
+              disabled={loading}
+              className={validationErrors[endpointKey] ? 'border-destructive' : ''}
+            />
+            {validationErrors[endpointKey] && (
+              <p className="text-sm text-destructive">{validationErrors[endpointKey]}</p>
+            )}
+          </div>
+          <div className="md:col-span-2 space-y-2">
+            <Label>{t('settings.ai.independentApiKey')}</Label>
+            <Input
+              type="password"
+              value={getSettingValue(apiKeyKey)}
+              onChange={(e) => onUpdate(apiKeyKey, e.target.value)}
+              placeholder={t('settings.ai.useGlobalConfig')}
+              disabled={loading}
+              className={validationErrors[apiKeyKey] ? 'border-destructive' : ''}
+            />
+            {validationErrors[apiKeyKey] && (
+              <p className="text-sm text-destructive">{validationErrors[apiKeyKey]}</p>
+            )}
+          </div>
+        </CollapsibleContent>
+      </Collapsible>
+    )
+  }
 
   return (
     <TooltipProvider>
@@ -286,6 +355,20 @@ const AISettingsTab: React.FC<AISettingsTabProps> = ({
                     <p className="text-sm text-destructive">{validationErrors.MaxFileLimit}</p>
                   )}
                 </div>
+              </CardContent>
+            </Card>
+          </div>
+
+          {/* 高级配置：独立模型配置 */}
+          <div className="md:col-span-2">
+            <Card>
+              <CardHeader>
+                <CardTitle className="text-base">{t('settings.ai.advancedConfig')}</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                {renderIndependentConfig('ChatModel', 'settings.ai.chatModelConfig')}
+                {renderIndependentConfig('AnalysisModel', 'settings.ai.analysisModelConfig')}
+                {renderIndependentConfig('DeepResearchModel', 'settings.ai.deepResearchModelConfig')}
               </CardContent>
             </Card>
           </div>

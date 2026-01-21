@@ -53,6 +53,15 @@ public class DynamicOptionsManager
         OpenAIOptions.Endpoint = await _configService.GetValueAsync<string>("Endpoint") ?? "";
         OpenAIOptions.ModelProvider = await _configService.GetValueAsync<string>("ModelProvider") ?? "OpenAI";
         OpenAIOptions.DeepResearchModel = await _configService.GetValueAsync<string>("DeepResearchModel") ?? "";
+        OpenAIOptions.ChatModelEndpoint = await _configService.GetValueAsync<string>("ChatModelEndpoint") ?? "";
+        OpenAIOptions.ChatModelApiKey = await _configService.GetValueAsync<string>("ChatModelApiKey") ?? "";
+        OpenAIOptions.ChatModelProvider = await _configService.GetValueAsync<string>("ChatModelProvider") ?? "";
+        OpenAIOptions.AnalysisModelEndpoint = await _configService.GetValueAsync<string>("AnalysisModelEndpoint") ?? "";
+        OpenAIOptions.AnalysisModelApiKey = await _configService.GetValueAsync<string>("AnalysisModelApiKey") ?? "";
+        OpenAIOptions.AnalysisModelProvider = await _configService.GetValueAsync<string>("AnalysisModelProvider") ?? "";
+        OpenAIOptions.DeepResearchModelEndpoint = await _configService.GetValueAsync<string>("DeepResearchModelEndpoint") ?? "";
+        OpenAIOptions.DeepResearchModelApiKey = await _configService.GetValueAsync<string>("DeepResearchModelApiKey") ?? "";
+        OpenAIOptions.DeepResearchModelProvider = await _configService.GetValueAsync<string>("DeepResearchModelProvider") ?? "";
         OpenAIOptions.EnableMem0 = await _configService.GetValueAsync<bool>("EnableMem0", false);
         OpenAIOptions.Mem0ApiKey = await _configService.GetValueAsync<string>("Mem0ApiKey") ?? "";
         OpenAIOptions.Mem0Endpoint = await _configService.GetValueAsync<string>("Mem0Endpoint") ?? "";
